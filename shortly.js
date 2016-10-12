@@ -47,7 +47,9 @@ passport.deserializeUser(function(user, done) {
 var validateUserPass = function(username, password, done) {
   return new User({username: username}).fetch()
     .then(function(found) {
-      if (found) { 
+      console.log('found', found);
+      console.log('password param', password);
+      if (found) {
         var salt = found.attributes.salt;
         var encryptpw = found.attributes.password;
         if (bcrypt.hashSync(password, salt) === encryptpw) {
@@ -76,9 +78,6 @@ passport.use(new GitHubStrategy({
   clientSecret: '200c478cc9719068771e9f5910436c47c53a3d51',
   callbackURL: 'http://localhost:4568/auth/github/callback'
 }, function(accessToken, refreshToken, profile, done) {
-  // User.findOrCreate({ id: profile.id }, function (err, user) {
-  //   return done(err, user);
-  // });
   new User({username: profile.username }).fetch().then(function(found) {
     if (found) {
       return done(null, found.attributes);
@@ -97,7 +96,7 @@ passport.use(new GitHubStrategy({
 app.get('/auth/github',
   passport.authenticate('github', { scope: [ 'user:email' ] }));
 
-app.get('/auth/github/callback', 
+app.get('/auth/github/callback',
   passport.authenticate('github', { failureRedirect: '/login' }),
   function(req, res) {
     // Successful authentication, redirect home.
@@ -174,14 +173,14 @@ app.post('/signup', function(req, res) {
   });
 });
 
-app.post('/login', passport.authenticate('local', 
-  { 
+app.post('/login', passport.authenticate('local',
+  {
     successRedirect: '/',
     failureRedirect: '/login',
-    failureFlash: true 
+    failureFlash: true
   }));
 
-app.post('/links', 
+app.post('/links',
 function(req, res) {
   var uri = req.body.url;
 
@@ -212,12 +211,6 @@ function(req, res) {
     }
   });
 });
-
-/************************************************************/
-// Write your authentication routes here
-/************************************************************/
-
-
 
 /************************************************************/
 // Handle the wildcard route last - if all other routes fail
